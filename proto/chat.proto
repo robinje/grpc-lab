@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package chat;
+
+option go_package = "./chat";
+
+service Chat {
+  rpc Connect(ConnectRequest) returns (ConnectResponse);
+  rpc SendMessage(Message) returns (MessageAck);
+}
+
+message ConnectRequest {
+  string name = 1;
+}
+
+message ConnectResponse {
+  int32 id = 1;
+}
+
+message Message {
+  int32 id = 1;
+  string text = 2;
+}
+
+message MessageAck {
+  bool success = 1;
+}
