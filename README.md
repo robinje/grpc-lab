@@ -1,2 +1,2 @@
-# grpc-lab
+# gRPC Lab
 Experimenting with gRPC
