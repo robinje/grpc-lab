@@ -11,11 +11,11 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
-	chat "path/to/your/chat.pb.go"
+	chat "github.com/robinje/grpc-lab/chat"
 )
 
 func main() {
-	conn, err := grpc.Dial(":50051", grpc.WithInsecure())
+	conn, err := grpc.Dial(":50052", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("failed to dial server: %v", err)
 	}
@@ -23,10 +23,7 @@ func main() {
 
 	client := chat.NewChatClient(conn)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-
-	stream, err := client.Connect(ctx, &chat.ConnectRequest{Name: "Client"})
+	stream, err := client.Connect(context.Background(), &chat.ConnectRequest{Name: "Client"})
 	if err != nil {
 		log.Fatalf("failed to connect: %v", err)
 	}
@@ -53,9 +50,12 @@ func main() {
 			continue
 		}
 
-		if _, err := client.SendMessage(ctx, &chat.Message{Text: msg}); err != nil {
+		// Use a separate context for SendMessage to avoid cancellation due to timeout.
+		sendMessageCtx, cancel := context.WithTimeout(context.Background(), time.Second)
+		if _, err := client.SendMessage(sendMessageCtx, &chat.Message{Text: msg}); err != nil {
 			log.Printf("failed to send message: %v", err)
 		}
+		cancel()
 	}
 
 	wg.Wait()
