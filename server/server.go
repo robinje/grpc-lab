@@ -7,8 +7,8 @@ import (
 	"net"
 	"sync"
 
-	"google.golang.org/grpc"
 	pb "github.com/robinje/grpc-lab/chat"
+	"google.golang.org/grpc"
 )
 
 type server struct {
@@ -23,6 +23,11 @@ func (s *server) Connect(req *pb.ConnectRequest, stream pb.Chat_ConnectServer) e
 	msgChan := make(chan *pb.Message, 10)
 	s.clients[id] = msgChan
 	s.mu.Unlock()
+
+	// Send back the client ID in a ConnectResponse message
+	if err := stream.Send(&pb.ConnectResponse{Id: id}); err != nil {
+		return err
+	}
 
 	defer func() {
 		s.mu.Lock()

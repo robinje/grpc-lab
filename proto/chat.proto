@@ -5,7 +5,7 @@ package chat;
 option go_package = "./chat";
 
 service Chat {
-  rpc Connect(ConnectRequest) returns (stream Message); // <-- Change this line
+  rpc Connect(ConnectRequest) returns (stream Message); // <-- Change this line back
   rpc SendMessage(Message) returns (MessageAck);
 }
 
