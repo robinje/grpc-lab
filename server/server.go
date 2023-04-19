@@ -8,19 +8,19 @@ import (
 	"sync"
 
 	"google.golang.org/grpc"
-	chat "path/to/your/chat.pb.go"
+	pb "github.com/robinje/grpc-lab/chat"
 )
 
 type server struct {
-	chat.UnimplementedChatServer
-	clients map[int32]chan<- *chat.Message
+	pb.UnimplementedChatServer
+	clients map[int32]chan<- *pb.Message
 	mu      sync.Mutex
 }
 
-func (s *server) Connect(req *chat.ConnectRequest, stream chat.Chat_ConnectServer) error {
+func (s *server) Connect(req *pb.ConnectRequest, stream pb.Chat_ConnectServer) error {
 	s.mu.Lock()
 	id := int32(len(s.clients) + 1)
-	msgChan := make(chan *chat.Message, 10)
+	msgChan := make(chan *pb.Message, 10)
 	s.clients[id] = msgChan
 	s.mu.Unlock()
 
@@ -41,7 +41,7 @@ func (s *server) Connect(req *chat.ConnectRequest, stream chat.Chat_ConnectServe
 	return nil
 }
 
-func (s *server) SendMessage(ctx context.Context, msg *chat.Message) (*chat.MessageAck, error) {
+func (s *server) SendMessage(ctx context.Context, msg *pb.Message) (*pb.MessageAck, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -52,7 +52,7 @@ func (s *server) SendMessage(ctx context.Context, msg *chat.Message) (*chat.Mess
 		}
 	}
 
-	return &chat.MessageAck{Success: true}, nil
+	return &pb.MessageAck{Success: true}, nil
 }
 
 func main() {
@@ -62,7 +62,7 @@ func main() {
 	}
 
 	s := grpc.NewServer()
-	chat.RegisterChatServer(s, &server{clients: make(map[int32]chan<- *chat.Message)})
+	pb.RegisterChatServer(s, &server{clients: make(map[int32]chan<- *pb.Message)})
 	fmt.Println("Server listening on :50052")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
